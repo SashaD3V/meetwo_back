@@ -1,0 +1,2 @@
+server:
+  port: 8081  # au lieu de 8080

@@ -23,13 +23,14 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "password") // Exclure le mot de passe du toString
+@ToString(exclude = "password")
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // AJOUT DU CHAMP username (requis par UserDetails)
     @Column(unique = true, nullable = false, length = 50)
     private String username;
 
@@ -39,7 +40,11 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    // Informations personnelles pour le site de rencontre
+    // CHAMP name pour l'affichage
+    @Column(nullable = false, length = 200)
+    private String name;
+
+    // Informations personnelles
     @Column(length = 100)
     private String firstName;
 
@@ -48,6 +53,10 @@ public class User implements UserDetails {
 
     @Column
     private LocalDate birthDate;
+
+    // AJOUT DU CHAMP AGE
+    @Column(nullable = false)
+    private Integer age = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -59,7 +68,6 @@ public class User implements UserDetails {
     @Column(length = 100)
     private String city;
 
-    // Relations avec les enums
     @ElementCollection(targetClass = Interest.class)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_interests", joinColumns = @JoinColumn(name = "user_id"))
@@ -89,22 +97,29 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean credentialsNonExpired = true;
 
-    // Constructeur personnalisé pour les champs essentiels
+    // Constructeur personnalisé
     public User(String username, String email, String password, Gender gender, RelationshipType seekingRelationshipType) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.gender = gender;
         this.seekingRelationshipType = seekingRelationshipType;
+        this.name = username; // Valeur par défaut
+        this.age = 0; // Valeur par défaut
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.interests = new HashSet<>();
     }
 
-    // Méthodes UserDetails pour Spring Security
+    // Méthodes UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // Pas de rôles pour l'instant
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
     }
 
     @Override
@@ -127,15 +142,32 @@ public class User implements UserDetails {
         return enabled;
     }
 
-    // Méthode utile pour calculer l'âge
-    public int getAge() {
+    // Méthode pour calculer l'âge
+    public Integer getAge() {
+        return age;
+    }
+
+    // Méthode privée pour calculer l'âge basé sur birthDate
+    private int calculateAge() {
         if (birthDate == null) {
             return 0;
         }
         return LocalDate.now().getYear() - birthDate.getYear();
     }
 
-    // Méthode pour initialiser les timestamps
+    // Génération automatique du name
+    public void generateName() {
+        if (firstName != null && lastName != null) {
+            this.name = firstName + " " + lastName;
+        } else if (firstName != null) {
+            this.name = firstName;
+        } else if (lastName != null) {
+            this.name = lastName;
+        } else {
+            this.name = username;
+        }
+    }
+
     @PrePersist
     public void prePersist() {
         if (createdAt == null) {
@@ -144,11 +176,18 @@ public class User implements UserDetails {
         if (updatedAt == null) {
             updatedAt = LocalDateTime.now();
         }
+        if (name == null || name.trim().isEmpty()) {
+            generateName();
+        }
+        // Calculer l'âge avant la sauvegarde
+        this.age = calculateAge();
     }
 
-    // Méthode pour mettre à jour le timestamp
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+        generateName();
+        // Recalculer l'âge à chaque mise à jour
+        this.age = calculateAge();
     }
 }

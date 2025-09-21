@@ -16,6 +16,7 @@ public class UserMapper {
         response.setId(user.getId());
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
+        response.setName(user.getName()); // AJOUT du champ name
         response.setFirstName(user.getFirstName());
         response.setLastName(user.getLastName());
         response.setBirthDate(user.getBirthDate());
@@ -32,9 +33,9 @@ public class UserMapper {
         if (request == null) return null;
 
         User user = new User();
-        user.setUsername(request.getUsername());
+        user.setUsername(request.getUsername()); // MAINTENANT ça marche
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); // Tu devras encoder le mot de passe
+        user.setPassword(request.getPassword());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setBirthDate(request.getBirthDate());
@@ -43,6 +44,10 @@ public class UserMapper {
         user.setCity(request.getCity());
         user.setInterests(request.getInterests());
         user.setSeekingRelationshipType(request.getSeekingRelationshipType());
+
+        // Génération automatique du name
+        user.generateName();
+
         return user;
     }
 
@@ -67,5 +72,8 @@ public class UserMapper {
         if (request.getInterests() != null) {
             user.setInterests(request.getInterests());
         }
+
+        // Régénération du name après modification
+        user.generateName();
     }
 }

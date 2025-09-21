@@ -13,6 +13,7 @@ public class UserResponse {
     private Long id;
     private String username;
     private String email;
+    private String name; // IMPORTANT : ce champ doit exister
     private String firstName;
     private String lastName;
     private LocalDate birthDate;

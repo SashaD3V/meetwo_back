@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaAuditing
 @EnableTransactionManagement
 public class MeetwoApplication {
-    
     public static void main(String[] args) {
         SpringApplication.run(MeetwoApplication.class, args);
     }

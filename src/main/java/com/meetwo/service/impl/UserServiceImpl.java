@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -104,7 +105,26 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public boolean existsByUsername(String username) {
-        return userRepository.existsByUsername(username);
+        System.out.println("=== DIAGNOSTIC REPOSITORY ===");
+
+        // Test 1: Compter tous les users
+        long totalUsers = userRepository.count();
+        System.out.println("Total users en base: " + totalUsers);
+
+        // Test 2: Récupérer tous les usernames
+        List<User> allUsers = userRepository.findAll();
+        System.out.println("Usernames en base:");
+        allUsers.forEach(u -> System.out.println(" - '" + u.getUsername() + "'"));
+
+        // Test 3: Test avec findByUsername
+        Optional<User> userFound = userRepository.findByUsername(username);
+        System.out.println("findByUsername('" + username + "') trouve: " + userFound.isPresent());
+
+        // Test 4: Le existsByUsername original
+        boolean exists = userRepository.existsByUsername(username);
+        System.out.println("existsByUsername('" + username + "') retourne: " + exists);
+
+        return exists;
     }
 
     @Override

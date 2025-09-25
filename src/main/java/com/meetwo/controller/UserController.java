@@ -222,12 +222,15 @@ public class UserController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Genre invalide"
+                    description = "Genre invalide. Valeurs acceptées: HOMME, FEMME"
             )
     })
     public ResponseEntity<List<UserResponse>> getUsersByGender(
-            @Parameter(description = "Genre de l'utilisateur", example = "MALE",
-                    schema = @Schema(implementation = Gender.class))
+            @Parameter(
+                    description = "Genre de l'utilisateur",
+                    example = "HOMME",
+                    schema = @Schema(type = "string", allowableValues = {"HOMME", "FEMME"})
+            )
             @PathVariable Gender gender) {
         List<UserResponse> users = userService.getUsersByGender(gender);
         return ResponseEntity.ok(users);
@@ -302,6 +305,6 @@ public class UserController {
             @Parameter(description = "Adresse email à vérifier", example = "john@example.com")
             @PathVariable String email) {
         boolean exists = userService.existsByEmail(email);
-        return ResponseEntity.ok(exists);
+        return ResponseEntity.ok(!exists);
     }
 }

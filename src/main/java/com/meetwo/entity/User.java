@@ -13,10 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -189,5 +187,30 @@ public class User implements UserDetails {
         generateName();
         // Recalculer l'âge à chaque mise à jour
         this.age = calculateAge();
+    }
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("position ASC")
+    private List<Photo> photos = new ArrayList<>();
+
+    // Méthodes utilitaires à ajouter dans User :
+    public Photo getMainPhoto() {
+        return photos.stream()
+                .filter(Photo::getEstPrincipale)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public List<Photo> getPhotosOrderedByPosition() {
+        return photos.stream()
+                .sorted(Comparator.comparing(Photo::getPosition))
+                .collect(Collectors.toList());
+    }
+
+    public void setMainPhoto(Photo photo) {
+        // Retirer le statut principal des autres photos
+        photos.forEach(p -> p.setEstPrincipale(false));
+        // Définir la nouvelle photo principale
+        photo.setEstPrincipale(true);
     }
 }
